@@ -10,29 +10,75 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username }  = request.headers;
+
+  const user = users.find(user => user.username === username);
+  
+  if(!user) {
+    return response.status(404).json({ error: 'User not found' })
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if(user.pro) {
+    return next();
+  } else if(!user.pro && user.todos.length < 10) {
+    return next();
+  }
+
+  return response.status(403).json({ error: 'Limit of todo reached'})
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if(!validate(id)) {
+    return response.status(400).json({ error: 'Id incorrect'});
+  }
+
+  const user = users.find(user => user.username === username);
+ 
+  if(!user) {
+    return response.status(404).json({ error: 'User not found'});
+  }  
+  
+  const userTodo = user.todos.find(todo => todo.id === id);
+
+  if(!userTodo) {
+    return response.status(404).json(({ error: 'ToDo not found' }));
+  }
+
+  request.todo = userTodo;
+  request.user = user;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id);
+
+  if(!user) {
+    return response.status(404).json({ error: "User not found" })
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
   const { name, username } = request.body;
 
   const usernameAlreadyExists = users.some((user) => user.username === username);
-
-  if (usernameAlreadyExists) {
-    return response.status(400).json({ error: 'Username already exists' });
-  }
 
   const user = {
     id: uuidv4(),
@@ -42,9 +88,11 @@ app.post('/users', (request, response) => {
     todos: []
   };
 
-  users.push(user);
+  users.push(user)
 
-  return response.status(201).json(user);
+  return usernameAlreadyExists
+    ? response.status(400).json({ error: 'Username already exists' })
+    : response.status(201).json(user);
 });
 
 app.get('/users/:id', findUserById, (request, response) => {
@@ -111,7 +159,7 @@ app.delete('/todos/:id', checksExistsUserAccount, checksTodoExists, (request, re
 
   const todoIndex = user.todos.indexOf(todo);
 
-  if (todoIndex === -1) {
+  if (todoIndex < 0) {
     return response.status(404).json({ error: 'Todo not found' });
   }
 
