@@ -3,7 +3,7 @@
 
 ## 💻 Descrição
 
-Desafio para do bootcamp Node.JS. Nesse exercício foi necessário desenvolver middlewares para validar rota de uma aplicação. 
+Desafio para bootcamp Node.JS lecionado pela Rocketseat. Nesse exercício foi necessário desenvolver middlewares para validar rotas de uma aplicação. 
 A validação das rotas será feita em um app de todo no qual os usuários cadastrados no plano pro tem uma quantidade ilimitada de postagem e usuário normais só podem cadastrar até 10 todos
 
 ## 🛠️ Teste
